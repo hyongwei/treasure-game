@@ -1,0 +1,59 @@
+# Page snapshot
+
+```yaml
+- generic [active]:
+  - generic:
+    - generic:
+      - generic:
+        - button: Sign In / Register
+      - generic:
+        - generic:
+          - heading [level=1]: 🏴‍☠️ Treasure Hunt Game 🏴‍☠️
+          - paragraph: Click on the treasure chests to discover what's inside!
+          - paragraph: "💰 Treasure: +$100 | 💀 Skeleton: -$50"
+        - generic:
+          - generic:
+            - text: "Current Score:"
+            - generic: $0
+        - generic:
+          - generic:
+            - generic:
+              - img
+            - generic:
+              - generic: Click to open!
+          - generic:
+            - generic:
+              - img
+            - generic:
+              - generic: Click to open!
+          - generic:
+            - generic:
+              - img
+            - generic:
+              - generic: Click to open!
+  - dialog "🏴‍☠️ Player Account" [ref=e2]:
+    - heading "🏴‍☠️ Player Account" [level=2] [ref=e4]
+    - generic [ref=e5]:
+      - tablist [ref=e6]:
+        - tab "Login" [ref=e7]
+        - tab "Register" [selected] [ref=e8]
+      - tabpanel "Register" [ref=e9]:
+        - generic [ref=e10]:
+          - generic [ref=e11]:
+            - generic [ref=e12]: Username
+            - textbox "Username" [ref=e13]:
+              - /placeholder: 3-20 alphanumeric characters
+              - text: user1774391817611
+            - paragraph [ref=e14]: Username is required
+          - generic [ref=e15]:
+            - generic [ref=e16]: Password
+            - textbox "Password" [ref=e17]:
+              - /placeholder: Minimum 8 characters
+              - text: test1234
+            - paragraph [ref=e18]: Password is required
+          - button "Create Account" [ref=e19]
+    - button "Continue as Guest" [ref=e21]
+    - button "Close" [ref=e22]:
+      - img
+      - generic [ref=e23]: Close
+```
