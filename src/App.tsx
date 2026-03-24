@@ -15,6 +15,8 @@ interface Box {
   id: number;
   isOpen: boolean;
   hasTreasure: boolean;
+  isSpecial: boolean;
+  revealedPoints?: number;
 }
 
 function Game() {
@@ -25,12 +27,17 @@ function Game() {
   const { post } = useApi();
 
   const initializeGame = () => {
-    // Randomly assign treasure to one box
-    const treasureBoxIndex = Math.floor(Math.random() * 3);
-    const newBoxes: Box[] = Array.from({ length: 3 }, (_, index) => ({
+    // Randomly assign treasure to one box, special chest to another
+    const treasureBoxIndex = Math.floor(Math.random() * 4);
+    let specialBoxIndex = Math.floor(Math.random() * 4);
+    while (specialBoxIndex === treasureBoxIndex) {
+      specialBoxIndex = Math.floor(Math.random() * 4);
+    }
+    const newBoxes: Box[] = Array.from({ length: 4 }, (_, index) => ({
       id: index,
       isOpen: false,
       hasTreasure: index === treasureBoxIndex,
+      isSpecial: index === specialBoxIndex,
     }));
     
     setBoxes(newBoxes);
@@ -49,15 +56,15 @@ function Game() {
     setBoxes(prevBoxes => {
       const updatedBoxes = prevBoxes.map(box => {
         if (box.id === boxId && !box.isOpen) {
-          const newScore = box.hasTreasure ? score + 100 : score - 50;
-          setScore(newScore);
-          const sound = new Audio(box.hasTreasure ? chestOpenSound : evilLaughSound);
+          const points = box.hasTreasure ? 100 : box.isSpecial ? (Math.random() < 0.5 ? 200 : -200) : -50;
+          setScore(prev => prev + points);
+          const sound = new Audio(box.hasTreasure || (box.isSpecial && points > 0) ? chestOpenSound : evilLaughSound);
           sound.play();
-          return { ...box, isOpen: true };
+          return { ...box, isOpen: true, revealedPoints: points };
         }
         return box;
       });
-      
+
       // Check if treasure is found or all boxes are opened
       const treasureFound = updatedBoxes.some(box => box.isOpen && box.hasTreasure);
       const allOpened = updatedBoxes.every(box => box.isOpen);
@@ -67,7 +74,7 @@ function Game() {
         if (token) {
           const finalScore = updatedBoxes.reduce((acc, box) => {
             if (!box.isOpen) return acc;
-            return acc + (box.hasTreasure ? 100 : -50);
+            return acc + (box.revealedPoints ?? 0);
           }, 0);
           post('/api/scores', { score: finalScore }).catch(() => {});
         }
@@ -91,7 +98,7 @@ function Game() {
           Click on the treasure chests to discover what's inside!
         </p>
         <p className="text-amber-700 text-sm">
-          💰 Treasure: +$100 | 💀 Skeleton: -$50
+          💰 Treasure: +$100 | 💀 Skeleton: -$50 | ⭐ Special: ±$200
         </p>
       </div>
 
@@ -120,7 +127,7 @@ function Game() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
             {boxes.map((box) => (
               <motion.div
                 key={box.id}
@@ -132,28 +139,32 @@ function Game() {
               >
                 <motion.div
                   initial={{ rotateY: 0 }}
-                  animate={{ 
+                  animate={{
                     rotateY: box.isOpen ? 180 : 0,
                     scale: box.isOpen ? 1.1 : 1
                   }}
-                  transition={{ 
+                  transition={{
                     duration: 0.6,
                     ease: "easeInOut"
                   }}
                   className="relative"
                 >
+                  {/* Special chest glow indicator (before open) */}
+                  {!box.isOpen && box.isSpecial && (
+                    <div className="absolute inset-0 rounded-lg animate-pulse ring-4 ring-yellow-400 ring-offset-2 pointer-events-none" />
+                  )}
                   <img
-                    src={box.isOpen 
+                    src={box.isOpen
                       ? (box.hasTreasure ? treasureChest : skeletonChest)
                       : closedChest
                     }
-                    alt={box.isOpen 
+                    alt={box.isOpen
                       ? (box.hasTreasure ? "Treasure!" : "Skeleton!")
-                      : "Treasure Chest"
+                      : box.isSpecial ? "Special Chest" : "Treasure Chest"
                     }
-                    className="w-48 h-48 object-contain drop-shadow-lg"
+                    className={`w-40 h-40 object-contain drop-shadow-lg ${!box.isOpen && box.isSpecial ? 'drop-shadow-[0_0_12px_rgba(250,204,21,0.8)]' : ''}`}
                   />
-                  
+
                   {box.isOpen && (
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
@@ -163,29 +174,39 @@ function Game() {
                     >
                       {box.hasTreasure ? (
                         <div className="text-2xl animate-bounce">✨💰✨</div>
+                      ) : box.isSpecial && (box.revealedPoints ?? 0) > 0 ? (
+                        <div className="text-2xl animate-bounce">⭐🎊⭐</div>
+                      ) : box.isSpecial ? (
+                        <div className="text-2xl animate-pulse">⭐💥⭐</div>
                       ) : (
                         <div className="text-2xl animate-pulse">💀👻💀</div>
                       )}
                     </motion.div>
                   )}
                 </motion.div>
-                
-                <div className="mt-4 text-center">
+
+                <div className="mt-3 text-center">
+                  {/* Special badge before open */}
+                  {!box.isOpen && box.isSpecial && (
+                    <div className="text-xs font-bold text-yellow-600 bg-yellow-100 border border-yellow-400 rounded px-2 py-0.5 mb-1">
+                      ⭐ SPECIAL
+                    </div>
+                  )}
                   {box.isOpen ? (
                     <motion.div
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: 0.4, duration: 0.3 }}
                       className={`text-lg p-2 rounded-lg ${
-                        box.hasTreasure 
-                          ? 'bg-green-100 text-green-800 border border-green-300' 
+                        (box.revealedPoints ?? 0) > 0
+                          ? 'bg-green-100 text-green-800 border border-green-300'
                           : 'bg-red-100 text-red-800 border border-red-300'
                       }`}
                     >
-                      {box.hasTreasure ? '+$100' : '-$50'}
+                      {(box.revealedPoints ?? 0) > 0 ? `+$${box.revealedPoints}` : `-$${Math.abs(box.revealedPoints ?? 0)}`}
                     </motion.div>
                   ) : (
-                    <div className="text-amber-700 p-2">
+                    <div className="text-amber-700 p-2 text-sm">
                       Click to open!
                     </div>
                   )}
@@ -209,8 +230,10 @@ function Game() {
                   </span>
                 </p>
                 <p className="text-sm text-amber-600 mt-2">
-                  {boxes.some(box => box.isOpen && box.hasTreasure) 
-                    ? 'Treasure found! Well done, treasure hunter! 🎉' 
+                  {boxes.some(box => box.isOpen && box.hasTreasure)
+                    ? 'Treasure found! Well done, treasure hunter! 🎉'
+                    : boxes.some(box => box.isOpen && box.isSpecial && (box.revealedPoints ?? 0) > 0)
+                    ? 'Special chest bonus! Lucky you! ⭐'
                     : 'No treasure found this time! Better luck next time! 💀'}
                 </p>
               </div>
