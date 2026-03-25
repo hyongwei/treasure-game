@@ -147,7 +147,7 @@ function Game() {
                     duration: 0.6,
                     ease: "easeInOut"
                   }}
-                  className="relative"
+                  style={{ width: 120, height: 120, position: 'relative', flexShrink: 0 }}
                 >
                   {/* Special chest glow indicator (before open) */}
                   {!box.isOpen && box.isSpecial && (
@@ -162,7 +162,8 @@ function Game() {
                       ? (box.hasTreasure ? "Treasure!" : "Skeleton!")
                       : box.isSpecial ? "Special Chest" : "Treasure Chest"
                     }
-                    className={`w-32 h-32 object-contain drop-shadow-lg ${!box.isOpen && box.isSpecial ? 'drop-shadow-[0_0_12px_rgba(250,204,21,0.8)]' : ''}`}
+                    style={{ width: 120, height: 120, objectFit: 'contain' }}
+                    className={!box.isOpen && box.isSpecial ? 'drop-shadow-[0_0_12px_rgba(250,204,21,0.8)]' : 'drop-shadow-lg'}
                   />
 
                   {box.isOpen && (
