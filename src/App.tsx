@@ -127,7 +127,7 @@ function Game() {
         )}
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-4 gap-4 mb-8 max-w-2xl w-full">
             {boxes.map((box) => (
               <motion.div
                 key={box.id}
@@ -162,7 +162,7 @@ function Game() {
                       ? (box.hasTreasure ? "Treasure!" : "Skeleton!")
                       : box.isSpecial ? "Special Chest" : "Treasure Chest"
                     }
-                    className={`w-40 h-40 object-contain drop-shadow-lg ${!box.isOpen && box.isSpecial ? 'drop-shadow-[0_0_12px_rgba(250,204,21,0.8)]' : ''}`}
+                    className={`w-32 h-32 object-contain drop-shadow-lg ${!box.isOpen && box.isSpecial ? 'drop-shadow-[0_0_12px_rgba(250,204,21,0.8)]' : ''}`}
                   />
 
                   {box.isOpen && (
