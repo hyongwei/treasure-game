@@ -127,7 +127,7 @@ function Game() {
         )}
       </div>
 
-      <div className="grid grid-cols-4 gap-4 mb-8 max-w-2xl w-full">
+      <div style={{ display: 'flex', flexDirection: 'row', gap: '16px', marginBottom: '2rem', justifyContent: 'center', flexWrap: 'nowrap' }}>
             {boxes.map((box) => (
               <motion.div
                 key={box.id}
